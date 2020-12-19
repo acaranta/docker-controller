@@ -35,7 +35,7 @@ async def main():
     list_of_files = glob.glob(yamlpath + '/docker*.yml')           # create the list of file
     for file_name in list_of_files:
       with open(file_name, 'r') as file:
-        composeconfig = yaml.load(file)
+        composeconfig = yaml.load(file, Loader=yaml.FullLoader)
         for svc in composeconfig["services"]:
           if composeconfig["services"][svc]["image"] == checkimg:
              rescmd += "cd " + yamlpath + " ; "
