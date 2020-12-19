@@ -30,7 +30,7 @@ async def main():
     print("\n##################################################")
     print(datetime.now())
     print("Received hook call for " + checkimg)
-    print("##################################################")
+    print("--------------------------------------------------")
     rescmd = ""
     list_of_files = glob.glob(yamlpath + '/docker*.yml')           # create the list of file
     for file_name in list_of_files:
