@@ -39,16 +39,28 @@ async def main():
         composeconfig = yaml.load(file, Loader=yaml.FullLoader)
         for svc in composeconfig["services"]:
           if composeconfig["services"][svc]["image"] == checkimg:
-             rescmd += "cd " + yamlpath + " ; "
-             rescmd += "./stack.sh " + file_name + " pull " + svc + " ; "
-             rescmd += "./stack.sh " + file_name + " up " + svc + " ; "
+             send_status(redis, "Pulling " + checkimg + " in " + file_name, "info")
+             rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
+             print("Executing : " + rescmd)
+             os.system(rescmd)
+             send_status(redis, "Updating " + checkimg + " in " + file_name, "info")
+             rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
+             print("Executing : " + rescmd)
+             os.system(rescmd)
     if rescmd:
-      print("Executing : " + rescmd)
-      os.system(rescmd)
+      print("Done for : " + checkimg)
+      send_status(redis, "Work done for " + checkimg, "info")
     else:
       print("Image " + checkimg + " not found in compose files")
+      send_status(redis, "Image " + checkimg + " not found in compose files", "info")
     print("##################################################")
 
+
+def send_status(redis, message, msgtype):
+    resp = {}
+    resp['message'] = message
+    resp['type'] = msgtype
+    return redis.rpush('docker-controller-resp', json.dumps(resp))
 
 print(str(datetime.now()) + " -- Starting Work Loop ...")
 loop = asyncio.get_event_loop()
