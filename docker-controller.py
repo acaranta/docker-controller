@@ -19,7 +19,7 @@ if os.getenv('YAML_PATH') != None:
   yamlpath = os.getenv('YAML_PATH')
 
 async def main():
-
+  # Get messages from REDIS queue
   redis = await aioredis.create_redis('redis://'+redisserver+'/0', encoding='utf-8')
 
   while True:
@@ -31,6 +31,7 @@ async def main():
     print(datetime.now())
     print("Received hook call for " + checkimg)
     print("--------------------------------------------------")
+    # Find if image is used in compose files, prepare cmd if so and run it
     rescmd = ""
     list_of_files = glob.glob(yamlpath + '/docker*.yml')           # create the list of file
     for file_name in list_of_files:
