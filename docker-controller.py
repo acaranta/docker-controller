@@ -11,7 +11,7 @@ from pprint import pprint
 from datetime import datetime
 
 #### OPTS ####
-redisserver = "localhost"
+redisserver = "localhost:6379"
 if os.getenv('REDIS_SRV') != None:
   redisserver = os.getenv('REDIS_SRV')
 yamlpath = "/appdata"
@@ -20,7 +20,7 @@ if os.getenv('YAML_PATH') != None:
 
 async def main():
 
-  redis = await aioredis.create_redis('redis://'+redisserver+':6379/0', encoding='utf-8')
+  redis = await aioredis.create_redis('redis://'+redisserver+'/0', encoding='utf-8')
 
   while True:
     msg = await redis.blpop('dockerhub')
