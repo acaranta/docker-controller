@@ -16,7 +16,7 @@ if os.getenv('REDIS_SRV') != None:
   redisserver = os.getenv('REDIS_SRV')
 yamlpath = "/appdata"
 if os.getenv('YAML_PATH') != None:
-  redisserver = os.getenv('YAML_PATH')
+  yamlpath = os.getenv('YAML_PATH')
 
 async def main():
 
@@ -49,6 +49,6 @@ async def main():
     print("##################################################")
 
 
-
+print(str(datetime.now()) + " -- Starting Work Loop ...")
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
