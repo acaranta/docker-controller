@@ -38,7 +38,7 @@ async def main():
       with open(file_name, 'r') as file:
         composeconfig = yaml.load(file, Loader=yaml.FullLoader)
         for svc in composeconfig["services"]:
-          if composeconfig["services"][svc]["image"] == checkimg:
+          if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
              send_status(redis, "Pulling " + checkimg + " in " + file_name, "info")
              rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
              print("Executing : " + rescmd)
