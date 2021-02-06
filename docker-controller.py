@@ -6,6 +6,7 @@ import yaml
 import glob
 import sys
 import os
+import subprocess
 
 from pprint import pprint
 from datetime import datetime
@@ -26,34 +27,42 @@ async def main():
     msg = await redis.blpop('dockerhub')
     imgdata = json.loads(msg[1])
 
-    checkimg = imgdata['imgfull'] 
-    print("\n##################################################")
-    print(datetime.now())
-    print("Received hook call for " + checkimg)
-    print("--------------------------------------------------")
-    # Find if image is used in compose files, prepare cmd if so and run it
-    rescmd = ""
-    list_of_files = glob.glob(yamlpath + '/docker*.yml')           # create the list of file
-    for file_name in list_of_files:
-      with open(file_name, 'r') as file:
-        composeconfig = yaml.load(file, Loader=yaml.FullLoader)
-        for svc in composeconfig["services"]:
-          if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
-             send_status(redis, "Pulling " + checkimg + " in " + file_name, "info")
-             rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
-             print("Executing : " + rescmd)
-             os.system(rescmd)
-             send_status(redis, "Updating " + checkimg + " in " + file_name, "info")
-             rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
-             print("Executing : " + rescmd)
-             os.system(rescmd)
-    if rescmd:
-      print("Done for : " + checkimg)
-      send_status(redis, "Work done for " + checkimg, "info")
-    else:
-      print("Image " + checkimg + " not found in compose files")
-      send_status(redis, "Image " + checkimg + " not found in compose files", "info")
-    print("##################################################")
+    action = imgdata['action'] 
+    if action == "imgupdate":
+        checkimg = imgdata['imgfull'] 
+        print("\n##################################################")
+        print(datetime.now())
+        print("Received hook call for " + checkimg)
+        print("--------------------------------------------------")
+        # Find if image is used in compose files, prepare cmd if so and run it
+        rescmd = ""
+        list_of_files = glob.glob(yamlpath + '/docker*.yml')           # create the list of file
+        for file_name in list_of_files:
+          with open(file_name, 'r') as file:
+            composeconfig = yaml.load(file, Loader=yaml.FullLoader)
+            for svc in composeconfig["services"]:
+              if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
+                 send_status(redis, "Pulling " + checkimg + " in " + file_name, "info")
+                 rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
+                 print("Executing : " + rescmd)
+                 os.system(rescmd)
+                 send_status(redis, "Updating " + checkimg + " in " + file_name, "info")
+                 rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
+                 print("Executing : " + rescmd)
+                 os.system(rescmd)
+        if rescmd:
+          print("Done for : " + checkimg)
+          send_status(redis, "Work done for " + checkimg, "info")
+        else:
+          print("Image " + checkimg + " not found in compose files")
+          send_status(redis, "Image " + checkimg + " not found in compose files", "info")
+        print("##################################################")
+    if action == "pruning":
+        rescmd = "docker system prune --volumes -f"
+        print("Executing : " + rescmd)
+        pruningresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+        print("Pruning Results : " + pruningresult)
+        send_status(redis, "Pruning done : " + pruningresult, "info")
 
 
 def send_status(redis, message, msgtype):
