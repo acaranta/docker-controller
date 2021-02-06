@@ -52,16 +52,19 @@ async def main():
                  os.system(rescmd)
         if rescmd:
           print("Done for : " + checkimg)
+          print("##################################################")
           send_status(redis, "Work done for " + checkimg, "info")
         else:
           print("Image " + checkimg + " not found in compose files")
+          print("##################################################")
           send_status(redis, "Image " + checkimg + " not found in compose files", "info")
-        print("##################################################")
     if action == "pruning":
         rescmd = "docker system prune --volumes -f"
+        print("##################################################")
         print("Executing : " + rescmd)
         pruningresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
         print("Pruning Results : " + pruningresult)
+        print("##################################################")
         send_status(redis, "Pruning done : " + pruningresult, "info")
 
 
