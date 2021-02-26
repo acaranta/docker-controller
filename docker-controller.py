@@ -62,7 +62,7 @@ async def main():
           print("Image " + checkimg + " not found in compose files")
           print("##################################################")
           send_status(redis, "Image " + checkimg + " not found in compose files", "info")
-    if action == "pruning":
+    elif action == "pruning":
         rescmd = "docker system prune --volumes -f"
         print("##################################################")
         print("Executing : " + rescmd)
@@ -70,7 +70,7 @@ async def main():
         print("Pruning Results : " + pruningresult)
         print("##################################################")
         send_status(redis, "Pruning done : " + pruningresult, "info")
-    if action == "restart-image":
+    elif action == "restart-image":
         checkimg = imgdata['imgfull'] 
         if special_match(checkimg):
             print("\n##################################################")
@@ -102,7 +102,7 @@ async def main():
             print("Restart by image : image name contains forbidden characters")
             print("##################################################")
             send_status(redis, "Image restart failed, '"+checkimg+"' contains illegal characters ", "info")
-    if action == "restart-container":
+    elif action == "restart-container":
         container = imgdata['container'] 
         if special_match(container):
             rescmd = "docker restart " + container
@@ -118,6 +118,11 @@ async def main():
             print("##################################################")
             send_status(redis, "Restart failed, '"+container+"' contains illegal characters ", "info")
 
+    else: 
+        print("##################################################")
+        print("Action unknown : "+action)
+        print("##################################################")
+        send_status(redis, "Action unknown, '"+action+"'" , "info")
 
 def send_status(redis, message, msgtype):
     resp = {}
