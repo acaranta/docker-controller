@@ -24,7 +24,7 @@ async def main():
   redis = await aioredis.create_redis('redis://'+redisserver+'/0', encoding='utf-8')
 
   while True:
-    msg = await redis.blpop('dockerhub')
+    msg = await redis.blpop('docker-controller')
     imgdata = json.loads(msg[1])
 
     action = imgdata['action'] 
