@@ -117,6 +117,13 @@ async def main():
             print("Container restart : container name contains forbidden characters")
             print("##################################################")
             send_status(redis, "Restart failed, '"+container+"' contains illegal characters ", "info")
+    elif action == "container-list":
+            rescmd = "docker ps --format='{{json .}}'"
+            print("##################################################")
+            restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+            print("Docker PS Done")
+            print("##################################################")
+            send_status(redis, restartresult, "pslist")
 
     else: 
         print("##################################################")
