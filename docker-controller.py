@@ -8,6 +8,7 @@ import sys
 import os
 import re
 import subprocess
+import socket
 
 from pprint import pprint
 from datetime import datetime
@@ -19,6 +20,8 @@ if os.getenv('REDIS_SRV') != None:
 yamlpath = "/appdata"
 if os.getenv('YAML_PATH') != None:
   yamlpath = os.getenv('YAML_PATH')
+deamonName = socket.gethostname()
+
 
 def special_match(strg, search=re.compile(r'[^a-zA-Z0-9\-_:/]').search):
   return not bool(search(strg))
