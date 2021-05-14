@@ -14,7 +14,7 @@ from pprint import pprint
 from datetime import datetime
 
 #### OPTS ####
-mqttServer = "192.168.10.12"
+mqttServer = "127.0.0.1"
 if os.getenv('MQTT_SRV') != None:
   mqttServer = os.getenv('MQTT_SRV')
 mqttPort = 1883
