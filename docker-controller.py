@@ -33,11 +33,11 @@ mqttTopics = [(mqttRootTopic + "/" + deamonName + "/action",1),(mqttRootTopic + 
 def special_match(strg, search=re.compile(r'[^a-zA-Z0-9\-_:/]').search):
   return not bool(search(strg))
 
-def publish(mqttClient,route, payload, msgtype):
+def publish(mqttClient, route, payload, msgtype):
     resp = {}
-    resp['message'] = payload
     resp['type'] = msgtype
     resp['host'] = deamonName
+    resp['message'] = payload
     return mqttClient.publish(mqttRootTopic + "/" + deamonName + "/" + route, json.dumps(resp))
 
 def on_connect(client, userdata, flags, rc):
@@ -52,6 +52,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     data = message.payload
     receive=data.decode("utf-8")
+    print ("Message received: "  + str(message.payload))
     imgdata = json.loads(receive)
     print ("Message received: "  + str(imgdata))
 
