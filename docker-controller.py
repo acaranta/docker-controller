@@ -52,7 +52,6 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     data = message.payload
     receive=data.decode("utf-8")
-    print ("Message received: "  + str(message.payload))
     imgdata = json.loads(receive)
     print ("Message received: "  + str(imgdata))
 
