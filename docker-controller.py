@@ -28,7 +28,7 @@ if os.getenv('CTRL_HOST') != None:
   deamonName = os.getenv('CTRL_HOST')
 
 mqttRootTopic = "dkr-ctrl"
-mqttTopics = [(mqttRootTopic + "/" + deamonName + "/action",1),(mqttRootTopic + "/ALL/action",1)]
+mqttTopics = [(mqttRootTopic + "/" + deamonName + "/action",1),(mqttRootTopic + "/ALL/action",2)]
 
 def special_match(strg, search=re.compile(r'[^a-zA-Z0-9\-_:/]').search):
   return not bool(search(strg))
