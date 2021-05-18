@@ -170,7 +170,7 @@ client.subscribe(mqttTopics)
 
 try:
     while not client.connected_flag and not client.bad_connection_flag: #wait in loop
-	time.sleep(1)
+      time.sleep(1)
     print("Detected connection error to MQTT, exiting")
 except KeyboardInterrupt:
     print ("exiting")
