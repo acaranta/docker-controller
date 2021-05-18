@@ -169,8 +169,8 @@ while Connected != True:    #Wait for connection
 client.subscribe(mqttTopics)
 
 try:
-  while True:
-    time.sleep(1)
+    while not client.connected_flag and not client.bad_connection_flag: #wait in loop
+	time.sleep(1)
 except KeyboardInterrupt:
     print ("exiting")
 
