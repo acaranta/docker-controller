@@ -41,12 +41,13 @@ def publish(mqttClient, route, payload, msgtype):
     return mqttClient.publish(mqttRootTopic + "/" + deamonName + "/" + route, json.dumps(resp))
 
 def on_connect(client, userdata, flags, rc):
+    global Connected                #Use global variable
     if rc == 0:
         print("Connected to broker")
-        global Connected                #Use global variable
         Connected = True                #Signal connection
     else:
         print("Connection failed")
+        Connected = False
 
 
 def on_message(client, userdata, message):
@@ -169,7 +170,7 @@ while Connected != True:    #Wait for connection
 client.subscribe(mqttTopics)
 
 try:
-    while not client.connected_flag and not client.bad_connection_flag: #wait in loop
+    while Connected == True: #wait in loop
       time.sleep(1)
     print("Detected connection error to MQTT, exiting")
 except KeyboardInterrupt:
