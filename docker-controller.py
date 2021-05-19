@@ -177,6 +177,7 @@ while True:
         try:
             client.connect(mqttServer, mqttPort)
         except (ConnectionError, OSError) as e:
+            client.disconnect()
             print("Error connecting, Retrying ...")
             time.sleep(2)
             if RetryConnect <= 0:
