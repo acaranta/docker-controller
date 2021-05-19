@@ -171,21 +171,17 @@ client.on_connect = on_connect
 client.on_disconnect = on_disconnect   
 client.on_message = on_message
 while True:
-    RetryConnect = 5
     while Connected != True:    #Wait for connection
-        RetryConnect -= 1
         try:
             client.connect(mqttServer, mqttPort)
+            client.loop_start()
+            client.subscribe(mqttTopics)
+            print(Connected)
+            time.sleep(5)
         except (ConnectionError, OSError) as e:
-            client.disconnect()
-            print("Error connecting, Retrying ...")
+            print("Error connecting")
             time.sleep(2)
-            if RetryConnect <= 0:
-                print("too many tries, exiting")
-                sys.exit(1)
-            continue
-    client.loop_start()
-    client.subscribe(mqttTopics)
+            sys.exit(1)
 
     try:
         while Connected == True: #wait in loop
