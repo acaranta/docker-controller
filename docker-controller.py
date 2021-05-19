@@ -176,11 +176,9 @@ while True:
             client.connect(mqttServer, mqttPort)
             client.loop_start()
             client.subscribe(mqttTopics)
-            print(Connected)
             time.sleep(5)
         except (ConnectionError, OSError) as e:
             print("Error connecting")
-            time.sleep(2)
             sys.exit(1)
 
     try:
