@@ -170,18 +170,29 @@ client = mqtt.Client(deamonName)
 client.on_connect = on_connect   
 client.on_disconnect = on_disconnect   
 client.on_message = on_message
-client.connect(mqttServer, mqttPort)
-client.loop_start()
-while Connected != True:    #Wait for connection
-    time.sleep(0.1)
-client.subscribe(mqttTopics)
+while True:
+    RetryConnect = 5
+    while Connected != True:    #Wait for connection
+        RetryConnect -= 1
+        try:
+            client.connect(mqttServer, mqttPort)
+        except (ConnectionError, OSError) as e:
+            print("Error connecting, Retrying ...")
+            time.sleep(2)
+            if RetryConnect <= 0:
+                print("too many tries, exiting")
+                sys.exit(1)
+            continue
+    client.loop_start()
+    client.subscribe(mqttTopics)
 
-try:
-    while Connected == True: #wait in loop
-      time.sleep(1)
-    print("Detected connection error to MQTT, exiting")
-except KeyboardInterrupt:
-    print ("exiting")
+    try:
+        while Connected == True: #wait in loop
+          time.sleep(1)
+        print("Detected connection error to MQTT, exiting")
+    except KeyboardInterrupt:
+        print ("exiting")
 
-client.disconnect()
-client.loop_stop()
+    client.disconnect()
+    client.loop_stop()
+
