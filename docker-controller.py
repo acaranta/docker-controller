@@ -50,6 +50,12 @@ def on_connect(client, userdata, flags, rc):
         Connected = False
 
 
+def on_disconnect(client, userdata, rc):
+    global Connected                #Use global variable
+    print("Connection failed")
+    Connected = False
+
+
 def on_message(client, userdata, message):
     data = message.payload
     receive=data.decode("utf-8")
@@ -162,6 +168,7 @@ def on_message(client, userdata, message):
 Connected = False 
 client = mqtt.Client(deamonName)
 client.on_connect = on_connect   
+client.on_disconnect = on_disconnect   
 client.on_message = on_message
 client.connect(mqttServer, mqttPort)
 client.loop_start()
