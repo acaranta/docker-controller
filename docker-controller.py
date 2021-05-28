@@ -139,8 +139,11 @@ def on_message(client, userdata, message):
             rescmd = "docker restart " + container
             print("##################################################")
             print("Trying to restart " + container)
-            restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-            print("Restart Results : " + restartresult)
+            try:
+              restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+              print("Restart Results : " + restartresult)
+            except Exception as e:
+              print("Restart Results : " + e)
             print("##################################################")
             publish(client,"status", "Restart done : " + restartresult, "info")
         else:
