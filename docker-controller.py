@@ -144,7 +144,7 @@ def on_message(client, userdata, message):
               restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
               print("Restart Results : " + restartresult)
             except Exception as e:
-              print("Restart Results : " + e)
+              print("Restart Results : " + str(e))
             print("##################################################")
             publish(client,"status", "Restart done : " + restartresult, "info")
         else:
