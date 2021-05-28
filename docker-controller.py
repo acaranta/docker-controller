@@ -143,10 +143,12 @@ def on_message(client, userdata, message):
             try:
               restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
               print("Restart Results : " + restartresult)
+              print("##################################################")
+              publish(client,"status", "Restart done : " + restartresult, "info")
             except Exception as e:
               print("Restart Results : " + str(e))
-            print("##################################################")
-            publish(client,"status", "Restart done : " + restartresult, "info")
+              print("##################################################")
+              publish(client,"status", "Restart NOT OK see logs", "info")
         else:
             print("##################################################")
             print("Container restart : container name contains forbidden characters")
