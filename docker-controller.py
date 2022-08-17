@@ -50,6 +50,12 @@ def on_connect(client, userdata, flags, rc):
         Connected = False
 
 
+def on_disconnect(client, userdata, rc):
+    global Connected                #Use global variable
+    print("Connection failed")
+    Connected = False
+
+
 def on_message(client, userdata, message):
     data = message.payload
     receive=data.decode("utf-8")
@@ -70,15 +76,16 @@ def on_message(client, userdata, message):
           with open(file_name, 'r') as file:
             composeconfig = yaml.load(file, Loader=yaml.FullLoader)
             for svc in composeconfig["services"]:
-              if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
-                 publish(client,"status", "Pulling " + checkimg + " in " + file_name, "info")
-                 rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
-                 print("Executing : " + rescmd)
-                 os.system(rescmd)
-                 publish(client,"status", "Updating " + checkimg + " in " + file_name, "info")
-                 rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
-                 print("Executing : " + rescmd)
-                 os.system(rescmd)
+              if 'image' in composeconfig["services"][svc]:
+                  if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
+                     publish(client,"status", "Pulling " + checkimg + " in " + file_name, "info")
+                     rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
+                     print("Executing : " + rescmd)
+                     os.system(rescmd)
+                     publish(client,"status", "Updating " + checkimg + " in " + file_name, "info")
+                     rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
+                     print("Executing : " + rescmd)
+                     os.system(rescmd)
         if rescmd:
           print("Done for : " + checkimg)
           print("##################################################")
@@ -133,10 +140,15 @@ def on_message(client, userdata, message):
             rescmd = "docker restart " + container
             print("##################################################")
             print("Trying to restart " + container)
-            restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-            print("Restart Results : " + restartresult)
-            print("##################################################")
-            publish(client,"status", "Restart done : " + restartresult, "info")
+            try:
+              restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+              print("Restart Results : " + restartresult)
+              print("##################################################")
+              publish(client,"status", "Restart done : " + restartresult, "info")
+            except Exception as e:
+              print("Restart Results : " + str(e))
+              print("##################################################")
+              publish(client,"status", "Restart NOT OK see logs", "info")
         else:
             print("##################################################")
             print("Container restart : container name contains forbidden characters")
@@ -177,19 +189,26 @@ def on_message(client, userdata, message):
 Connected = False 
 client = mqtt.Client(deamonName)
 client.on_connect = on_connect   
+client.on_disconnect = on_disconnect   
 client.on_message = on_message
-client.connect(mqttServer, mqttPort)
-client.loop_start()
-while Connected != True:    #Wait for connection
-    time.sleep(0.1)
-client.subscribe(mqttTopics)
+while True:
+    while Connected != True:    #Wait for connection
+        try:
+            client.connect(mqttServer, mqttPort)
+            client.loop_start()
+            client.subscribe(mqttTopics)
+            time.sleep(5)
+        except (ConnectionError, OSError) as e:
+            print("Error connecting")
+            sys.exit(1)
 
-try:
-    while Connected == True: #wait in loop
-      time.sleep(1)
-    print("Detected connection error to MQTT, exiting")
-except KeyboardInterrupt:
-    print ("exiting")
+    try:
+        while Connected == True: #wait in loop
+          time.sleep(1)
+        print("Detected connection error to MQTT, exiting")
+    except KeyboardInterrupt:
+        print ("exiting")
 
-client.disconnect()
-client.loop_stop()
+    client.disconnect()
+    client.loop_stop()
+
