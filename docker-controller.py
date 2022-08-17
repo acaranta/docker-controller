@@ -142,6 +142,21 @@ def on_message(client, userdata, message):
             print("Container restart : container name contains forbidden characters")
             print("##################################################")
             publish(client,"status", "Restart failed, '"+container+"' contains illegal characters ", "info")
+    elif action == "stop-container":
+        container = imgdata['container'] 
+        if special_match(container):
+            rescmd = "docker stop " + container
+            print("##################################################")
+            print("Trying to stop " + container)
+            restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+            print("Stop Results : " + restartresult)
+            print("##################################################")
+            publish(client,"status", "Stop done : " + restartresult, "info")
+        else:
+            print("##################################################")
+            print("Container stop : container name contains forbidden characters")
+            print("##################################################")
+            publish(client,"status", "stop failed, '"+container+"' contains illegal characters ", "info")
     elif action == "container-list":
             rescmd = "docker ps --format='{{json .}}'"
             print("##################################################")
