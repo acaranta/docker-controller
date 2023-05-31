@@ -96,7 +96,7 @@ def on_message(client, userdata, message):
           print("##################################################")
           publish(client,"status", "Image " + checkimg + " not found in compose files", "info", imgdata)
     elif action == "pruning":
-        rescmd = "docker system prune --volumes -f"
+        rescmd = "docker system prune --volumes -a -f"
         print("##################################################")
         print("Executing : " + rescmd)
         pruningresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
