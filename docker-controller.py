@@ -188,7 +188,7 @@ def on_message(client, userdata, message):
 
 #Setup MQTT Connection
 Connected = False 
-client = mqtt.Client(deamonName)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, deamonName)
 client.on_connect = on_connect   
 client.on_disconnect = on_disconnect   
 client.on_message = on_message
