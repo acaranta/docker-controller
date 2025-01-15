@@ -51,7 +51,7 @@ def on_connect(client, userdata, flags, rc, properties):
         Connected = False
 
 
-def on_disconnect(client, userdata, rc, properties):
+def on_disconnect(client, userdata, flags, rc, properties):
     global Connected                #Use global variable
     print("Connection failed")
     Connected = False
