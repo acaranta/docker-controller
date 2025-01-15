@@ -41,7 +41,7 @@ def publish(mqttClient, route, payload, msgtype, reqconfig):
     resp['reqconf'] = reqconfig
     return mqttClient.publish(mqttRootTopic + "/" + deamonName + "/" + route, json.dumps(resp))
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     global Connected                #Use global variable
     if rc == 0:
         print("Connected to broker")
@@ -51,7 +51,7 @@ def on_connect(client, userdata, flags, rc):
         Connected = False
 
 
-def on_disconnect(client, userdata, rc):
+def on_disconnect(client, userdata, rc, properties):
     global Connected                #Use global variable
     print("Connection failed")
     Connected = False
@@ -188,7 +188,7 @@ def on_message(client, userdata, message):
 
 #Setup MQTT Connection
 Connected = False 
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, deamonName)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, deamonName)
 client.on_connect = on_connect   
 client.on_disconnect = on_disconnect   
 client.on_message = on_message
