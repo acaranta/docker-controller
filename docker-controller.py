@@ -136,25 +136,31 @@ def on_message(client, userdata, message):
             print("##################################################")
             publish(client,"status", "Image restart failed, '"+checkimg+"' contains illegal characters ", "info", imgdata)
     elif action == "restart-container":
-        container = imgdata['container'] 
-        if special_match(container):
-            rescmd = "docker restart " + container
-            print("##################################################")
-            print("Trying to restart " + container)
-            try:
-              restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-              print("Restart Results : " + restartresult)
+        if 'container' in imgdata:
+          container = imgdata['container'] 
+          if special_match(container):
+              rescmd = "docker restart " + container
               print("##################################################")
-              publish(client,"status", "Restart done : " + restartresult, "info", imgdata)
-            except Exception as e:
-              print("Restart Results : " + str(e))
+              print("Trying to restart " + container)
+              try:
+                restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+                print("Restart Results : " + restartresult)
+                print("##################################################")
+                publish(client,"status", "Restart done : " + restartresult, "info", imgdata)
+              except Exception as e:
+                print("Restart Results : " + str(e))
+                print("##################################################")
+                publish(client,"status", "Restart NOT OK see logs", "info", imgdata)
+          else:
               print("##################################################")
-              publish(client,"status", "Restart NOT OK see logs", "info", imgdata)
+              print("Container restart : container name contains forbidden characters")
+              print("##################################################")
+              publish(client,"status", "Restart failed, '"+container+"' contains illegal characters ", "info", imgdata)
         else:
             print("##################################################")
-            print("Container restart : container name contains forbidden characters")
+            print("Container restart : no container name provided")
             print("##################################################")
-            publish(client,"status", "Restart failed, '"+container+"' contains illegal characters ", "info", imgdata)
+            publish(client,"status", "Restart failed, no container name provided", "info", imgdata)
     elif action == "stop-container":
         container = imgdata['container'] 
         if special_match(container):
