@@ -1,4 +1,5 @@
-FROM acaranta/dind-compose:latest
+# FROM acaranta/dind-compose:latest
+FROM registry.minixer.cloud/infra/dind-compose:latest
 
 ENV REDIS_SRV localhost
 ENV YAML_PATH /appdata
