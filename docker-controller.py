@@ -79,14 +79,14 @@ def on_message(client, userdata, message):
             for svc in composeconfig["services"]:
               if 'image' in composeconfig["services"][svc]:
                   if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
-                     publish(client,"status", "Pulling " + checkimg + " in " + file_name, "info", imgdata)
-                     rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
-                     print("Executing : " + rescmd)
-                     os.system(rescmd)
-                     publish(client,"status", "Updating " + checkimg + " in " + file_name, "info", imgdata)
-                     rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
-                     print("Executing : " + rescmd)
-                     os.system(rescmd)
+                      publish(client,"status", "Pulling " + checkimg + " in " + file_name, "info", imgdata)
+                      rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " pull " + svc + " ; "
+                      print("Executing : " + rescmd)
+                      os.system(rescmd)
+                      publish(client,"status", "Updating " + checkimg + " in " + file_name, "info", imgdata)
+                      rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " up " + svc + " ; "
+                      print("Executing : " + rescmd)
+                      os.system(rescmd)
         if rescmd:
           print("Done for : " + checkimg)
           print("##################################################")
@@ -118,10 +118,10 @@ def on_message(client, userdata, message):
                 composeconfig = yaml.load(file, Loader=yaml.FullLoader)
                 for svc in composeconfig["services"]:
                   if composeconfig["services"][svc]["image"] == checkimg or "library/" + composeconfig["services"][svc]["image"] == checkimg:
-                     publish(client,"status", "Restarting " + checkimg + " in " + file_name, "info", imgdata)
-                     rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " restart " + svc + " ; "
-                     print("Executing : " + rescmd)
-                     os.system(rescmd)
+                      publish(client,"status", "Restarting " + checkimg + " in " + file_name, "info", imgdata)
+                      rescmd = "cd " + yamlpath + " ; ./stack.sh " + file_name + " restart " + svc + " ; "
+                      print("Executing : " + rescmd)
+                      os.system(rescmd)
             if rescmd:
               print("Done restarting : " + checkimg)
               print("##################################################")
