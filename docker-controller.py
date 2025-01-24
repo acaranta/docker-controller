@@ -113,7 +113,18 @@ def container_restart(imgdata):
             print("Container restart : no container name provided")
             print("##################################################")
             publish(client,"status", "Restart failed, no container name provided", "info", imgdata)
-            
+
+def container_pruning(imgdata):
+    rescmd = "docker system prune --volumes -a -f"
+    print("##################################################")
+    print("Executing : " + rescmd)
+    pruningresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+    # Move last line with total space reclaimed to first line
+    pruningresult = "\n".join([pruningresult.splitlines()[-1]] + pruningresult.splitlines()[:-1]) if pruningresult.strip() else pruningresult
+    print("Pruning Results : " + pruningresult)
+    print("##################################################")
+    publish(client,"status", "Pruning done : " + pruningresult, "info", imgdata)
+    
 ### MQTT Message Handler ###
 def on_message(client, userdata, message):
     data = message.payload
@@ -154,13 +165,8 @@ def on_message(client, userdata, message):
           print("##################################################")
           publish(client,"status", "Image " + checkimg + " not found in compose files", "info", imgdata)
     elif action == "pruning":
-        rescmd = "docker system prune --volumes -a -f"
-        print("##################################################")
-        print("Executing : " + rescmd)
-        pruningresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-        print("Pruning Results : " + pruningresult)
-        print("##################################################")
-        publish(client,"status", "Pruning done : " + pruningresult, "info", imgdata)
+        container_pruning(imgdata)
+        
     elif action == "restart-image":
         checkimg = imgdata['imgfull'] 
         if special_match(checkimg):
