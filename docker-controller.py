@@ -211,6 +211,9 @@ def image_restart(imgdata):
         print("Restart by image : image name contains forbidden characters")
         print("##################################################")
         publish(client,"status", "Image restart failed, '"+checkimg+"' contains illegal characters ", "info", imgdata)  
+
+
+
 ### MQTT Message Handler ###
 def on_message(client, userdata, message):
     data = message.payload
