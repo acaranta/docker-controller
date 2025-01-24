@@ -33,6 +33,22 @@ mqttTopics = [(mqttRootTopic + "/" + deamonName + "/action",1),(mqttRootTopic + 
 def special_match(strg, search=re.compile(r'[^a-zA-Z0-9\-_:/]').search):
   return not bool(search(strg))
 
+def get_container_list(type=None):
+  rescmd = "docker ps -a --no-trunc --format='{{json .}}'"
+  pslist = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+  if type == "json":
+    jsonpslist = {}
+    jsonpslist['pslist'] = []
+    jsonpslist['names'] = []
+    for item in pslist.split('\n'):
+      if item:
+        item = json.loads(item)
+        jsonpslist['pslist'].append(item)
+        jsonpslist['names'].append(item['Names'])
+    return jsonpslist
+  else:
+    return pslist
+
 def publish(mqttClient, route, payload, msgtype, reqconfig):
     resp = {}
     resp['type'] = msgtype
@@ -50,13 +66,55 @@ def on_connect(client, userdata, flags, rc, properties):
         print("Connection failed")
         Connected = False
 
-
 def on_disconnect(client, userdata, flags, rc, properties):
     global Connected                #Use global variable
     print("Connection failed")
     Connected = False
 
+### Containers Actions ###
+def container_list(imgdata):
+    print("##################################################")
+    pslist = get_container_list()
+    print("Docker PS Done")
+    print("##################################################")
+    publish(client,"pslist", pslist, "pslist", imgdata)
 
+  
+def container_restart(imgdata):
+        if 'container' in imgdata:
+          container = imgdata['container'] 
+          pslist = get_container_list('json')
+          if container in pslist['names']:
+            if special_match(container):
+                rescmd = "docker restart " + container
+                print("##################################################")
+                print("Trying to restart " + container)
+                try:
+                  restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
+                  print("Restart Results : " + restartresult)
+                  print("##################################################")
+                  publish(client,"status", "Restart done : " + restartresult, "info", imgdata)
+                except Exception as e:
+                  print("Restart Results : " + str(e))
+                  print("##################################################")
+                  publish(client,"status", "Restart NOT OK see logs", "info", imgdata)
+            else:
+                print("##################################################")
+                print("Container restart : container name contains forbidden characters")
+                print("##################################################")
+                publish(client,"status", "Restart failed, '"+container+"' contains illegal characters ", "info", imgdata)
+          else:
+            print("##################################################")
+            print("Container restart : container not found on this host")
+            print("##################################################")
+            # publish(client,"status", "Restart failed, container not found", "info", imgdata)
+        else:
+            print("##################################################")
+            print("Container restart : no container name provided")
+            print("##################################################")
+            publish(client,"status", "Restart failed, no container name provided", "info", imgdata)
+            
+### MQTT Message Handler ###
 def on_message(client, userdata, message):
     data = message.payload
     receive=data.decode("utf-8")
@@ -136,31 +194,7 @@ def on_message(client, userdata, message):
             print("##################################################")
             publish(client,"status", "Image restart failed, '"+checkimg+"' contains illegal characters ", "info", imgdata)
     elif action == "restart-container":
-        if 'container' in imgdata:
-          container = imgdata['container'] 
-          if special_match(container):
-              rescmd = "docker restart " + container
-              print("##################################################")
-              print("Trying to restart " + container)
-              try:
-                restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-                print("Restart Results : " + restartresult)
-                print("##################################################")
-                publish(client,"status", "Restart done : " + restartresult, "info", imgdata)
-              except Exception as e:
-                print("Restart Results : " + str(e))
-                print("##################################################")
-                publish(client,"status", "Restart NOT OK see logs", "info", imgdata)
-          else:
-              print("##################################################")
-              print("Container restart : container name contains forbidden characters")
-              print("##################################################")
-              publish(client,"status", "Restart failed, '"+container+"' contains illegal characters ", "info", imgdata)
-        else:
-            print("##################################################")
-            print("Container restart : no container name provided")
-            print("##################################################")
-            publish(client,"status", "Restart failed, no container name provided", "info", imgdata)
+            container_restart(imgdata)
     elif action == "stop-container":
         container = imgdata['container'] 
         if special_match(container):
@@ -177,12 +211,7 @@ def on_message(client, userdata, message):
             print("##################################################")
             publish(client,"status", "stop failed, '"+container+"' contains illegal characters ", "info", imgdata)
     elif action == "container-list":
-            rescmd = "docker ps --format='{{json .}}'"
-            print("##################################################")
-            restartresult = subprocess.check_output(rescmd, shell=True).decode("utf-8")
-            print("Docker PS Done")
-            print("##################################################")
-            publish(client,"pslist", restartresult, "pslist", imgdata)
+        container_list(imgdata)
 
     else: 
         print("##################################################")
@@ -191,31 +220,32 @@ def on_message(client, userdata, message):
         publish(client,"status", "Action unknown, '"+action+"'" , "info", imgdata)
     
 
+############### Main ###############
+if __name__ == '__main__':
+  #Setup MQTT Connection
+  Connected = False 
+  client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, deamonName)
+  client.on_connect = on_connect   
+  client.on_disconnect = on_disconnect   
+  client.on_message = on_message
+  while True:
+      while Connected != True:    #Wait for connection
+          try:
+              client.connect(mqttServer, mqttPort)
+              client.loop_start()
+              client.subscribe(mqttTopics)
+              time.sleep(5)
+          except (ConnectionError, OSError) as e:
+              print("Error connecting")
+              sys.exit(1)
 
-#Setup MQTT Connection
-Connected = False 
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, deamonName)
-client.on_connect = on_connect   
-client.on_disconnect = on_disconnect   
-client.on_message = on_message
-while True:
-    while Connected != True:    #Wait for connection
-        try:
-            client.connect(mqttServer, mqttPort)
-            client.loop_start()
-            client.subscribe(mqttTopics)
-            time.sleep(5)
-        except (ConnectionError, OSError) as e:
-            print("Error connecting")
-            sys.exit(1)
+      try:
+          while Connected == True: #wait in loop
+            time.sleep(1)
+          print("Detected connection error to MQTT, exiting")
+      except KeyboardInterrupt:
+          print ("exiting")
 
-    try:
-        while Connected == True: #wait in loop
-          time.sleep(1)
-        print("Detected connection error to MQTT, exiting")
-    except KeyboardInterrupt:
-        print ("exiting")
-
-    client.disconnect()
-    client.loop_stop()
+      client.disconnect()
+      client.loop_stop()
 
